@@ -1,8 +1,75 @@
 ---
-title: "Activity 2 - Day 1"
+title: "Activity 3 - Day 1"
 output: github_document
 ---
 
-```{setup, include=FALSE}
+```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(tidymodels)
+library(GGally)
 ```
+
+
+```{r Task3 Data Loading}
+
+hfi <- readr::read_csv("https://www.openintro.org/data/csv/hfi.csv")
+hfi
+```
+
+```{r Task3 Data Filtering}
+hfi_2016 <- hfi %>% filter(year==2016)
+
+```
+
+```{r}
+hfi_2016 %>% 
+  select(ends_with("_score")) %>% 
+  ggpairs()
+```
+
+```{r}
+m_hr_ef <- lm(pf_score ~ hf_score + ef_score, data = hfi_2016)
+tidy(m_hr_ef)
+```
+
+
+```{r}
+library(modelr)
+library(broom)
+library(plotly)
+
+# 1. Generate an evenly spaced grid of points from the data
+grid <- hfi_2016 %>%
+  data_grid(
+    hf_score = seq_range(hf_score, n = 50),
+    ef_score = seq_range(ef_score, n = 50)
+  )
+
+# 2. Feed generated grid values into model
+tidy_planes <- m_hr_ef %>%
+  augment(newdata = grid)
+
+# 3. Build the plane
+x <- unique(grid$hf_score)
+y <- unique(grid$ef_score)
+
+plane <- tidy_planes %>%
+  pull(.fitted) %>%
+  matrix(nrow = length(x), byrow = TRUE)
+
+# 4. Visualize regression plane together with the data points
+plot_ly(data = hfi_2016, z = ~pf_score, x = ~hf_score, y = ~ef_score, opacity = 0.6) %>%
+  #add_markers(text = ~case, marker = list(size = 2)) %>%
+  add_surface(
+    x = ~x, y = ~y, z = ~plane, 
+    showscale = FALSE, 
+    surfacecolor = matrix(0.5, nrow = nrow(plane), ncol = ncol(plane)), 
+    cauto = FALSE,
+    cmax = 1
+  )
+```
+
+
+

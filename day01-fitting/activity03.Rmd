@@ -1,5 +1,5 @@
 ---
-title: "Activity 3 - Day 1"
+title: "Activity 3"
 output: github_document 
 always_allow_html: true
 ---
@@ -12,6 +12,7 @@ library(tidymodels)
 library(GGally)
 ```
 
+## Day 1
 
 ```{r Task3 Data Loading}
 
